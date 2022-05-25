@@ -1,12 +1,122 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="battleships">
     <head>
         <meta charset="utf-8">
         <script src="angular.min.js"></script>
         <script src="app.js"></script>
+        <script>
+            
+            </script>
+        <link rel="stylesheet" href="style.css">
         <title>Battleships</title>
     </head>
-    <body>
-        <h1>Battleships!!!</h1>
+    <body ng-Controller="gameController">
+        <div id="wrapper">
+            <div id="1" class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div id="2" class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <img id="drag1" ng-Controller="shipController" ng-Click="change()" ng-Class="c" src="gray.png" draggable="true" ondragstart="drag(event)">
+            </div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <img id="drag2" ng-Controller="shipController" ng-Click="change()" ng-Class="c" src="gray.png" draggable="true" ondragstart="drag(event)">
+            </div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            <div class="square" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        </div>
+        {{board}}
     </body>
 </html>
