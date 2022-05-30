@@ -132,10 +132,10 @@ function drop(ev) {
 
     var shipClass = document.getElementById(data).className.split(" ")[1];
     
-    console.log(orientation);
-    console.log(shipType);
-    console.log(xPos);
-    console.log(yPos);
+    // console.log(orientation);
+    // console.log(shipType);
+    // console.log(xPos);
+    // console.log(yPos);
     // console.log(document.getElementById(ev.target.id).parentElement.id);
 
     if(isNaN(xPos)){
@@ -179,8 +179,9 @@ function drop(ev) {
             }
         }
     }
-    takePlace(shipClass, xPos, yPos);
-    updateBatlefield();
+    // takePlace(shipClass, xPos, yPos);
+    console.log("test");
+    updateBattlefield();
 
 
     // if(shipType == "ship2"){
@@ -200,18 +201,31 @@ function drop(ev) {
     // }
 };
 
-function updateBatlefield(){
+function updateBattlefield(){
     var taken = document.getElementsByClassName("busy");
+    var shipClassList = [];
+    var xPosList = [];
+    var yPosList = [];
     for(let i=0; i<taken.length; i++){
         if(taken[i].hasChildNodes()){
             var shipClass = taken[i].childNodes[0].className.split(" ")[1];
             var xPos = parseInt(taken[i].id.split(",")[0]);
             var yPos = parseInt(taken[i].id.split(",")[1]);
+            shipClassList.push(shipClass);
+            xPosList.push(xPos);
+            yPosList.push(yPos);
             // THIS IS HOW YOU GET OLD SHIP POSITION TO "DIFICULT" PLACES
             // BY USING CUSTOM ATTRUBUTE IN THE 'IMG' DOM IN HTML
-            console.log(taken[i].childNodes[0].attributes.pos.nodeValue);
-            takePlace(shipClass, xPos, yPos);
+            // console.log(taken[i].childNodes[0].attributes.pos.nodeValue);
+            // takePlace(shipClass, xPos, yPos);
         }
+        taken[i].className = "square";
+    }
+    for(let i=0; i<shipClassList.length; i++){
+        console.log(shipClassList[i]);
+        console.log(xPosList[i]);
+        console.log(yPosList[i]);
+        takePlace(shipClassList[i], xPosList[i], yPosList[i]);
     }
 }
 
