@@ -2,10 +2,21 @@
 'use strict';
     
 angular.module('battleships', [])
+
+.controller("ship1Controller", function($scope, $element) {
+    $scope.c = "ship-1-hor";
+
+    var parentPos = document.getElementById($element[0].id).parentElement.id;
+    var xPos = parseInt(parentPos.split(",")[0], 10);
+    var yPos = parseInt(parentPos.split(",")[1], 10);
+
+    takePlace($scope.c, xPos, yPos);
+})
     
 .controller("ship2Controller", function($scope, $element) {
     $scope.c = "ship-2-hor";
 
+    var shipSize = parseInt($scope.c.split("-")[1], 10);
     var parentPos = document.getElementById($element[0].id).parentElement.id;
     var xPos = parseInt(parentPos.split(",")[0], 10);
     var yPos = parseInt(parentPos.split(",")[1], 10);
@@ -18,7 +29,6 @@ angular.module('battleships', [])
     $scope.change = function() {
         if($scope.canRotate()){
             parentPos = document.getElementById($element[0].id).parentElement.id;
-            console.log(parentPos);
             xPos = parseInt(parentPos.split(",")[0], 10);
             yPos = parseInt(parentPos.split(",")[1], 10);
 
@@ -46,24 +56,36 @@ angular.module('battleships', [])
         yPos = parseInt(parentPos.split(",")[1], 10);
 
         if($scope.c.split("-")[2] == "hor"){
-            var newSpot = document.getElementById(xPos.toString()+","+(yPos-1).toString());
-            var nextSpot = document.getElementById(xPos.toString()+","+(yPos-2).toString());
-            if(newSpot == null || (nextSpot != null && nextSpot.className == "busy")){
-                console.log(xPos.toString()+","+yPos.toString());
-                console.log(newSpot);
-                console.log(nextSpot);
-                return false;
+            for(let i=1; i<shipSize; i++){
+                var newSpot = document.getElementById(xPos.toString()+","+(yPos-i).toString());
+                if(newSpot == null){
+                    return false;
+                }
             }
+
+            for(let i=-1; i<2; i++){
+                var nextSpot = document.getElementById((xPos+i).toString()+","+(yPos-shipSize).toString());
+                if(nextSpot != null && nextSpot.attributes.ship.nodeValue == "1"){
+                    return false;
+                }
+            }
+
             return true;
         } else {
-            var newSpot = document.getElementById((xPos+1).toString()+","+yPos.toString());
-            var nextSpot = document.getElementById((xPos+2).toString()+","+yPos.toString());
-            if(newSpot == null || (nextSpot != null && nextSpot.className == "busy")){
-                console.log(xPos.toString()+","+yPos.toString());
-                console.log(newSpot);
-                console.log(nextSpot);
-                return false;
+            for(let i=1; i<shipSize; i++){
+                var newSpot = document.getElementById((xPos+i).toString()+","+yPos.toString());
+                if(newSpot == null){
+                    return false;
+                }
             }
+
+            for(let i=-1; i<2; i++){
+                var nextSpot = document.getElementById((xPos+shipSize).toString()+","+(yPos-i).toString());
+                if(nextSpot != null && nextSpot.attributes.ship.nodeValue == "1"){
+                    return false;
+                }
+            }
+
             return true;
         }
     }
@@ -82,9 +104,9 @@ function drag(ev) {
     var yPos = parseInt(position.split(",")[1], 10);
     var shipClass = ev.target.className.split(" ")[1];
     
+    updateBattlefield();
     emptyPlace(shipClass, xPos, yPos);
 
-    //loop and update board for all except this one
     var ships = document.getElementsByClassName("busy");
     for(let i=0; i<ships.length; i++){
         if(ships[i].hasChildNodes()){
@@ -109,18 +131,40 @@ function drop(ev) {
     var positions = ev.target.id.split(",");
     var xPos = parseInt(positions[0], 10);
     var yPos = parseInt(positions[1], 10);
-    console.log(xPos);
-    console.log(yPos);
 
     var orientation = document.getElementById(data).className.split(" ")[1].split("-")[2];
+
+    var size = parseInt(document.getElementById(data).className.split(" ")[1].split("-")[1], 10);
 
     var shipClass = document.getElementById(data).className.split(" ")[1];
 
     if(isNaN(xPos) || ev.target.className == "busy"){
-        var oldX = document.getElementById(data).attributes.pos.nodeValue.split(",")[0];
-        var oldY = document.getElementById(data).attributes.pos.nodeValue.split(",")[1];
-        takePlace(shipClass, oldX, oldY);
-        return;
+        if(document.getElementById(data).attributes.pos.nodeValue != ""){
+            var oldX = document.getElementById(data).attributes.pos.nodeValue.split(",")[0];
+            var oldY = document.getElementById(data).attributes.pos.nodeValue.split(",")[1];
+            takePlace(shipClass, oldX, oldY);
+            return;
+        }
+    }
+
+    if(orientation == "hor"){
+        for(let i=0; i<size; i++){
+            if(document.getElementById((xPos+i).toString()+","+yPos.toString()).className == "busy"){
+                var oldX = document.getElementById(data).attributes.pos.nodeValue.split(",")[0];
+                var oldY = document.getElementById(data).attributes.pos.nodeValue.split(",")[1];
+                takePlace(shipClass, oldX, oldY);
+                return;
+            }
+        }
+    } else{
+        for(let i=0; i<size; i++){
+            if(document.getElementById(xPos.toString()+","+(yPos-i).toString()).className == "busy"){
+                var oldX = document.getElementById(data).attributes.pos.nodeValue.split(",")[0];
+                var oldY = document.getElementById(data).attributes.pos.nodeValue.split(",")[1];
+                takePlace(shipClass, oldX, oldY);
+                return;
+            }
+        }
     }
 
     if(shipType == "ship2"){
@@ -144,6 +188,14 @@ function drop(ev) {
                     console.log(e);
                 }
             }
+        }
+    } else {
+        try {
+            document.getElementById(data).attributes.pos.nodeValue = xPos.toString()+","+yPos.toString();
+            ev.target.appendChild(document.getElementById(data));
+        }
+        catch(e){
+            console.log(e);
         }
     }
 
@@ -181,6 +233,8 @@ function updateBattlefield(){
 function takePlace(shipClass, xPos, yPos){
     var orientation = shipClass.split("-")[2];
     var size = parseInt(shipClass.split("-")[1], 10);
+    xPos = parseInt(xPos, 10);
+    yPos = parseInt(yPos, 10);
 
     if(orientation == "hor"){
         var tempX = xPos-1;
@@ -194,6 +248,11 @@ function takePlace(shipClass, xPos, yPos){
             }
             tempX += 1;
         }
+
+        for(let i=0; i<size; i++){
+            document.getElementById((xPos+i).toString()+","+yPos.toString()).attributes.ship.nodeValue = "1";
+        }
+
     } else {
         var tempX = xPos-1;
         for(let i=0; i<3; i++){
@@ -205,6 +264,10 @@ function takePlace(shipClass, xPos, yPos){
                 tempY -= 1;
             }
             tempX += 1;
+        }
+
+        for(let i=0; i<size; i++){
+            document.getElementById(xPos.toString()+","+(yPos-i).toString()).attributes.ship.nodeValue = "1";
         }
     }
 };
@@ -220,6 +283,7 @@ function emptyPlace(shipClass, xPos, yPos){
             for(let j=0; j<3; j++){
                 if(document.getElementById(tempX.toString()+","+tempY.toString()) != null){
                     document.getElementById(tempX.toString()+","+tempY.toString()).className = "square";
+                    document.getElementById(tempX.toString()+","+tempY.toString()).attributes.ship.nodeValue = "0";
                 }
                 tempY += 1;
             }
@@ -232,6 +296,7 @@ function emptyPlace(shipClass, xPos, yPos){
             for(let j=0; j<size+2; j++){
                 if(document.getElementById(tempX.toString()+","+tempY.toString()) != null){
                     document.getElementById(tempX.toString()+","+tempY.toString()).className = "square";
+                    document.getElementById(tempX.toString()+","+tempY.toString()).attributes.ship.nodeValue = "0";
                 }
                 tempY -= 1;
             }
