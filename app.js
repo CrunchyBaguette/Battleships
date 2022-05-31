@@ -1,48 +1,7 @@
 (function () {
 'use strict';
     
-    
 angular.module('battleships', [])
-
-// .controller("battlefield", function($scope, $element) {
-//     var divsEmpty = document.getElementsByClassName("square");
-//     var divsTaken = document.getElementsByClassName("busy");
-    
-//     $scope.updateBattlefield = function() {
-//         for(var i = 0; i < divsEmpty.length; i++){
-//             if(divsEmpty[i].hasChildNodes()){
-//                 divsEmpty[i].className = "busy";
-//             }
-//         }
-    
-//         for(var i = 0; i < divsTaken.length; i++){
-//             if(!divsTaken[i].hasChildNodes()){
-//                 divsTaken[i].className = "square";
-//             }
-//         }
-//     }
-
-//     $scope.field = function($element){
-//         console.log($element.id);
-//         for(var i = 0; i < divsEmpty.length; i++){
-//             if(divsEmpty[i].id == id){
-//                 if(divsEmpty[i].hasChildNodes()){
-//                     divsEmpty[i].className = "busy";
-//                 }
-//                 return divsEmpty[i].className;
-//             }
-//         }
-    
-//         for(var i = 0; i < divsTaken.length; i++){
-//             if(divsTaken[i].id == id){
-//                 if(!divsTaken[i].hasChildNodes()){
-//                     divsTaken[i].className = "square";
-//                 }
-//                 return divsTaken[i].className;
-//             }
-//         }
-//     }
-// })
     
 .controller("ship2Controller", function($scope, $element) {
     $scope.c = "ship-2-hor";
@@ -59,6 +18,7 @@ angular.module('battleships', [])
     $scope.change = function() {
         if($scope.canRotate()){
             parentPos = document.getElementById($element[0].id).parentElement.id;
+            console.log(parentPos);
             xPos = parseInt(parentPos.split(",")[0], 10);
             yPos = parseInt(parentPos.split(",")[1], 10);
 
@@ -80,20 +40,29 @@ angular.module('battleships', [])
         }
     }
     $scope.canRotate = function() {
-        if($scope.shipOrientation == "hor"){
-            for(let i=1; i<$scope.shipSize; i++){
-                var newSpot = document.getElementById(xPos.toString()+","+(yPos-i).toString());
-                if(newSpot == null || newSpot.className == "busy"){
-                    return false;
-                }
+
+        parentPos = document.getElementById($element[0].id).parentElement.id;
+        xPos = parseInt(parentPos.split(",")[0], 10);
+        yPos = parseInt(parentPos.split(",")[1], 10);
+
+        if($scope.c.split("-")[2] == "hor"){
+            var newSpot = document.getElementById(xPos.toString()+","+(yPos-1).toString());
+            var nextSpot = document.getElementById(xPos.toString()+","+(yPos-2).toString());
+            if(newSpot == null || (nextSpot != null && nextSpot.className == "busy")){
+                console.log(xPos.toString()+","+yPos.toString());
+                console.log(newSpot);
+                console.log(nextSpot);
+                return false;
             }
             return true;
         } else {
-            for(let i=1; i<$scope.shipSize; i++){
-                var newSpot = document.getElementById((xPos+i).toString()+","+yPos.toString());
-                if(newSpot == null || newSpot.className == "busy"){
-                    return false;
-                }
+            var newSpot = document.getElementById((xPos+1).toString()+","+yPos.toString());
+            var nextSpot = document.getElementById((xPos+2).toString()+","+yPos.toString());
+            if(newSpot == null || (nextSpot != null && nextSpot.className == "busy")){
+                console.log(xPos.toString()+","+yPos.toString());
+                console.log(newSpot);
+                console.log(nextSpot);
+                return false;
             }
             return true;
         }
@@ -104,9 +73,7 @@ angular.module('battleships', [])
 
 
 function allowDrop(ev) {
-    if(ev.target.className != "busy"){
-        ev.preventDefault();
-    }
+    ev.preventDefault();
 };
   
 function drag(ev) {
@@ -116,6 +83,21 @@ function drag(ev) {
     var shipClass = ev.target.className.split(" ")[1];
     
     emptyPlace(shipClass, xPos, yPos);
+
+    //loop and update board for all except this one
+    var ships = document.getElementsByClassName("busy");
+    for(let i=0; i<ships.length; i++){
+        if(ships[i].hasChildNodes()){
+            var c = ships[i].childNodes[0].className.split(" ")[1];
+            var x = parseInt(ships[i].id.split(",")[0]);
+            var y = parseInt(ships[i].id.split(",")[1]);
+
+            if(!(x == xPos && y == yPos)){
+                takePlace(c, x, y);
+            }
+
+        }
+    }
 
     ev.dataTransfer.setData("text", ev.target.id);
 };
@@ -127,41 +109,25 @@ function drop(ev) {
     var positions = ev.target.id.split(",");
     var xPos = parseInt(positions[0], 10);
     var yPos = parseInt(positions[1], 10);
+    console.log(xPos);
+    console.log(yPos);
 
     var orientation = document.getElementById(data).className.split(" ")[1].split("-")[2];
 
     var shipClass = document.getElementById(data).className.split(" ")[1];
-    
-    // console.log(orientation);
-    // console.log(shipType);
-    // console.log(xPos);
-    // console.log(yPos);
-    // console.log(document.getElementById(ev.target.id).parentElement.id);
 
-    if(isNaN(xPos)){
+    if(isNaN(xPos) || ev.target.className == "busy"){
+        var oldX = document.getElementById(data).attributes.pos.nodeValue.split(",")[0];
+        var oldY = document.getElementById(data).attributes.pos.nodeValue.split(",")[1];
+        takePlace(shipClass, oldX, oldY);
         return;
     }
-
-    // if(shipType == "ship2"){
-    //     if(orientation == "hor"){
-    //         var tempX = xPos;
-    //         for(let i=0; i<2; i++){
-    //             document.getElementById(tempX.toString()+","+yPos.toString()).className = "square";
-    //             tempX = parseInt(tempX, 10) + 1;
-    //         }
-    //     } else {
-    //         var tempY = yPos;
-    //         for(let i=0; i<2; i++){
-    //             document.getElementById(xPos.toString()+","+tempY.toString()).className = "square";
-    //             tempY = parseInt(tempY, 10) + 1;
-    //         }
-    //     }
-    // }
 
     if(shipType == "ship2"){
         if(orientation == "hor"){
             if(xPos != 10){
                 try {
+                    document.getElementById(data).attributes.pos.nodeValue = xPos.toString()+","+yPos.toString();
                     ev.target.appendChild(document.getElementById(data));
                 }
                 catch(e){
@@ -171,6 +137,7 @@ function drop(ev) {
         } else {
             if(yPos != 1){
                 try {
+                    document.getElementById(data).attributes.pos.nodeValue = xPos.toString()+","+yPos.toString();
                     ev.target.appendChild(document.getElementById(data));
                 }
                 catch(e){
@@ -179,52 +146,34 @@ function drop(ev) {
             }
         }
     }
-    // takePlace(shipClass, xPos, yPos);
-    console.log("test");
+
+    takePlace(shipClass, xPos, yPos);
     updateBattlefield();
-
-
-    // if(shipType == "ship2"){
-    //     if(orientation == "hor"){
-    //         var tempX = xPos;
-    //         for(let i=0; i<2; i++){
-    //             document.getElementById(tempX.toString()+","+yPos.toString()).className = "busy";
-    //             tempX = parseInt(tempX, 10) + 1;
-    //         }
-    //     } else {
-    //         var tempY = yPos;
-    //         for(let i=0; i<2; i++){
-    //             document.getElementById(xPos.toString()+","+tempY.toString()).className = "busy";
-    //             tempY = parseInt(tempY, 10) + 1;
-    //         }
-    //     }
-    // }
 };
 
 function updateBattlefield(){
-    var taken = document.getElementsByClassName("busy");
-    var shipClassList = [];
-    var xPosList = [];
-    var yPosList = [];
-    for(let i=0; i<taken.length; i++){
-        if(taken[i].hasChildNodes()){
-            var shipClass = taken[i].childNodes[0].className.split(" ")[1];
-            var xPos = parseInt(taken[i].id.split(",")[0]);
-            var yPos = parseInt(taken[i].id.split(",")[1]);
+    var divs = document.getElementById("wrapper").getElementsByTagName("div");
+    
+    for(let i=0; i<divs.length; i++){
+        divs[i].className = "square";
+    }
+
+    var squares = document.getElementsByClassName("square");
+    let shipClassList = [];
+    let xPosList = [];
+    let yPosList = [];
+    for(let i=0; i<squares.length; i++){
+        if(squares[i].hasChildNodes()){
+            let shipClass = squares[i].childNodes[0].className.split(" ")[1];
+            let xPos = parseInt(squares[i].id.split(",")[0]);
+            let yPos = parseInt(squares[i].id.split(",")[1]);
             shipClassList.push(shipClass);
             xPosList.push(xPos);
             yPosList.push(yPos);
-            // THIS IS HOW YOU GET OLD SHIP POSITION TO "DIFICULT" PLACES
-            // BY USING CUSTOM ATTRUBUTE IN THE 'IMG' DOM IN HTML
-            // console.log(taken[i].childNodes[0].attributes.pos.nodeValue);
-            // takePlace(shipClass, xPos, yPos);
         }
-        taken[i].className = "square";
     }
+
     for(let i=0; i<shipClassList.length; i++){
-        console.log(shipClassList[i]);
-        console.log(xPosList[i]);
-        console.log(yPosList[i]);
         takePlace(shipClassList[i], xPosList[i], yPosList[i]);
     }
 }
