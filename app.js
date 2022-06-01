@@ -3,6 +3,49 @@
     
 angular.module('battleships', [])
 
+.controller("websocket", function($scope) {
+
+    $scope.message = "Click to prepare";
+
+    $scope.prepare = function() {
+        if($scope.message == "Click to prepare"){
+            $scope.message = "Waiting for other player!";
+            freezeBoard();
+        } else {
+            $scope.message = "Click to prepare";
+            unfreezeBoard();
+        }
+    }
+
+    $scope.freezeBoard = function(){
+        // Funkcja wyłączająca możliwość poruszania i obracania statkami
+        // Patrz: Zakładka w firefox
+        // Albo: attributes.ngClick
+        return;
+    }
+
+    $scope.unfreezeBoard = function(){
+        // Funkcja włączająca możliwość poruszania i obracania statkami
+        // Patrz: Zakładka w firefox
+        // Albo: attributes.ngClick
+        return;
+    }
+
+    const ws = new WebSocket("ws://localhost:8082");
+
+    ws.addEventListener("open", () => {
+        console.log("We are connected!");
+    });
+
+    ws.addEventListener("message", e => {
+        switch(e.data){
+            default:
+                console.log(e.data);
+                break;
+        }
+    });
+})
+
 .controller("ship1Controller", function($scope, $element) {
     $scope.c = "ship-1-hor";
 
@@ -13,10 +56,20 @@ angular.module('battleships', [])
     takePlace($scope.c, xPos, yPos);
 })
     
-.controller("ship2Controller", function($scope, $element) {
-    $scope.c = "ship-2-hor";
+.controller("shipController", function($scope, $element) {
 
-    var shipSize = parseInt($scope.c.split("-")[1], 10);
+    var shipName = $element[0].id.split(",")[0];
+    var shipSize = parseInt(shipName.charAt(shipName.length-1), 10);
+
+    if(shipSize == 2){
+        $scope.c = "ship-2-hor";
+    } else if(shipSize == 3){
+        $scope.c = "ship-3-hor";
+    } else{
+        $scope.c = "ship-4-hor";
+    }
+
+    // console.log($element[0].id.split(",")[0].charAt($element[0].id.split(",")[0].length-1));
     var parentPos = document.getElementById($element[0].id).parentElement.id;
     var xPos = parseInt(parentPos.split(",")[0], 10);
     var yPos = parseInt(parentPos.split(",")[1], 10);
@@ -32,18 +85,17 @@ angular.module('battleships', [])
             xPos = parseInt(parentPos.split(",")[0], 10);
             yPos = parseInt(parentPos.split(",")[1], 10);
 
-            $scope.shipSize = parseInt($scope.c.split("-")[1], 10);
-            $scope.shipOrientation = $scope.c.split("-")[2];
+            var shipOrientation = $scope.c.split("-")[2];
 
             emptyPlace($scope.c, xPos, yPos);
-            if($scope.c == "ship-2-hor"){
-                if(yPos != 1){
-                    $scope.c = "ship-2-ver";
+            if(shipOrientation == "hor"){
+                if(yPos != shipSize-1){
+                    $scope.c = $scope.c.replace("hor", "ver");
                 }
             }
             else {
-                if(xPos != 10){
-                    $scope.c = "ship-2-hor";
+                if(xPos != 10-(shipSize-2)){
+                    $scope.c = $scope.c.replace("ver", "hor");
                 }
             }
             takePlace($scope.c, xPos, yPos);
@@ -60,6 +112,10 @@ angular.module('battleships', [])
                 var newSpot = document.getElementById(xPos.toString()+","+(yPos-i).toString());
                 if(newSpot == null){
                     return false;
+                } else {
+                    if((yPos-i) < (yPos-1) && newSpot.className == "busy"){
+                        return false;
+                    }
                 }
             }
 
@@ -76,6 +132,10 @@ angular.module('battleships', [])
                 var newSpot = document.getElementById((xPos+i).toString()+","+yPos.toString());
                 if(newSpot == null){
                     return false;
+                } else {
+                    if((xPos+i) > (xPos+1) && newSpot.className == "busy"){
+                        return false;
+                    }
                 }
             }
 
@@ -204,7 +264,7 @@ function drop(ev) {
 };
 
 function updateBattlefield(){
-    var divs = document.getElementById("wrapper").getElementsByTagName("div");
+    var divs = document.getElementById("w1").getElementsByTagName("div");
     
     for(let i=0; i<divs.length; i++){
         divs[i].className = "square";

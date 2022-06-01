@@ -13,11 +13,26 @@ body, html {
     clear:both;
 }
   
-#wrapper {
+#w1 {
     margin: 10px auto;
     width: 520px;
     height: 520px;
     border: 5px solid black;
+    grid-area: 1 / 1 / span 1 / span 2;
+}
+
+#w2 {
+    margin: 10px auto;
+    width: 520px;
+    height: 520px;
+    border: 5px solid black;
+    grid-area: 1 / 3 / span 1 / span 2;
+}
+
+#container {
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    padding: 10px;
 }
   
 .draggable {
@@ -55,5 +70,25 @@ body, html {
 .ship-2-ver {
     width: 50px;
     height: 102px;
+}
+
+.ship-3-hor {
+    width: 154px;
+    height: 50px;
+}
+
+.ship-3-ver {
+    width: 50px;
+    height: 154px;
+}
+
+.ship-4-hor {
+    width: 206px;
+    height: 50px;
+}
+
+.ship-4-ver {
+    width: 50px;
+    height: 206px;
 }
   
