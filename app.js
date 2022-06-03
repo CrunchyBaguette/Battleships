@@ -5,45 +5,73 @@ angular.module('battleships', [])
 
 .controller("websocket", function($scope) {
 
+    $scope.ws = new WebSocket("ws://localhost:8082");
+
     $scope.message = "Click to prepare";
 
     $scope.prepare = function() {
         if($scope.message == "Click to prepare"){
             $scope.message = "Waiting for other player!";
-            freezeBoard();
         } else {
             $scope.message = "Click to prepare";
-            unfreezeBoard();
         }
+        $scope.ws.send("connect");
+        $scope.toggleBoard();
     }
 
-    $scope.freezeBoard = function(){
-        // Funkcja wyłączająca możliwość poruszania i obracania statkami
-        // Patrz: Zakładka w firefox
-        // Albo: attributes.ngClick
+    $scope.toggleBoard = function(){
+        var squares = document.getElementById("w1").getElementsByTagName("div");
+        for(let i=0; i<squares.length; i++){
+            if(squares[i].hasChildNodes()){
+                if(squares[i].firstChild.attributes.draggable != null){
+                    var canDrag = squares[i].firstChild.attributes.draggable.nodeValue;
+                    if(canDrag == "true"){
+                        squares[i].firstChild.attributes.draggable.nodeValue = "false";
+                    } else{
+                        squares[i].firstChild.attributes.draggable.nodeValue = "true";
+                    }
+                }
+                if(squares[i].firstChild.attributes.disabled != null){
+                    var isDisabled = squares[i].firstChild.attributes.disabled.nodeValue;
+                    if(isDisabled == "true"){
+                        squares[i].firstChild.attributes.disabled.nodeValue = "false";
+                    } else{
+                        squares[i].firstChild.attributes.disabled.nodeValue = "true";
+                    }
+                }
+            }
+        }
         return;
     }
 
-    $scope.unfreezeBoard = function(){
-        // Funkcja włączająca możliwość poruszania i obracania statkami
-        // Patrz: Zakładka w firefox
-        // Albo: attributes.ngClick
-        return;
-    }
-
-    const ws = new WebSocket("ws://localhost:8082");
-
-    ws.addEventListener("open", () => {
+    $scope.ws.addEventListener("open", () => {
         console.log("We are connected!");
     });
 
-    ws.addEventListener("message", e => {
+    $scope.ws.addEventListener("message", e => {
         switch(e.data){
+            case "sendBoard":
+                $scope.sendBoard();
+                break;
             default:
                 console.log(e.data);
                 break;
         }
     });
+
+    $scope.sendBoard = function() {
+        var shipPlacementsInfo = ""
+        var shipPlacements = document.getElementById("w1").getElementsByTagName("div");
+        for(let i=0; i<shipPlacements.length; i++){
+            if(shipPlacements[i].attributes.ship.nodeValue == "1"){
+                shipPlacementsInfo += shipPlacements[i].id+"|";
+            }
+        }
+        shipPlacementsInfo.slice(0, -1);
+        console.log(shipPlacementsInfo);
+        $scope.ws.send(shipPlacementsInfo);
+        $scope.$broadCasr
+    }
 })
 
 .controller("ship1Controller", function($scope, $element) {
@@ -102,6 +130,9 @@ angular.module('battleships', [])
         }
     }
     $scope.canRotate = function() {
+        if(document.getElementById($element[0].id).attributes.disabled.nodeValue == "true"){
+            return false;
+        }
 
         parentPos = document.getElementById($element[0].id).parentElement.id;
         xPos = parseInt(parentPos.split(",")[0], 10);
@@ -149,6 +180,10 @@ angular.module('battleships', [])
             return true;
         }
     }
+})
+
+.controller("enemyBoard", function($scope) {
+
 });
     
 })();
