@@ -3,20 +3,49 @@
     
 angular.module('battleships', [])
 
-.controller("websocket", function($scope) {
+.controller("containerController", function($scope) {
 
     $scope.ws = new WebSocket("ws://localhost:8082");
 
-    $scope.message = "Click to prepare";
+    $scope.rooms = [];
+    $scope.battle = false;
+    $scope.lobby = true;
 
-    $scope.prepare = function() {
-        if($scope.message == "Click to prepare"){
-            $scope.message = "Waiting for other player!";
-        } else {
-            $scope.message = "Click to prepare";
-        }
-        $scope.ws.send("connect");
+    $scope.createRoom = function() {
         $scope.toggleBoard();
+        $scope.battle = true;
+        $scope.lobby = false;
+        document.getElementById("left").id = "None";
+        document.getElementById("right").id = "left";
+        document.getElementById("enemy").id = "right";
+        
+        $scope.ws.send("createRoom");
+    }
+
+    $scope.leaveRoom = function() {
+        $scope.toggleBoard();
+        $scope.battle = false;
+        $scope.lobby = true;
+        document.getElementById("right").id = "enemy";
+        document.getElementById("left").id = "right";
+        document.getElementById("None").id = "left";
+
+        $scope.ws.send("leaveRoom");
+    }
+
+    $scope.enterRoom = function($event){
+        var enemyID = $event.target.parentElement.parentElement.getElementsByTagName("td")[0].firstChild.data;
+        var status = $event.target.parentElement.parentElement.getElementsByTagName("td")[1].firstChild.data;
+        if(status != "Playing"){
+            $scope.toggleBoard();
+            $scope.battle = true;
+            $scope.lobby = false;
+            document.getElementById("left").id = "None";
+            document.getElementById("right").id = "left";
+            document.getElementById("enemy").id = "right";
+
+            $scope.ws.send("enterRoom/"+enemyID.toString());
+        }
     }
 
     $scope.toggleBoard = function(){
@@ -41,21 +70,45 @@ angular.module('battleships', [])
                 }
             }
         }
-        return;
+    }
+
+    $scope.refreshRooms = function(){
+        $scope.ws.send("getRooms");
     }
 
     $scope.ws.addEventListener("open", () => {
         console.log("We are connected!");
+        $scope.ws.send("getRooms");
     });
 
     $scope.ws.addEventListener("message", e => {
-        switch(e.data){
+        var code = e.data.split("/")[0];
+        switch(code){
             case "sendBoard":
                 $scope.sendBoard();
                 break;
+            case "updateRooms":
+                if(e.data.split("/")[1] == "empty"){
+                    $scope.rooms = [];
+                    $scope.$apply();
+                    break;
+                }
+                var newRooms = [];
+                var roomsInfo = e.data.split("/")[1].slice(0, -1);
+                roomsInfo = roomsInfo.split("|");
+                for(let i=0; i<roomsInfo.length; i++){
+                    var dict = {};
+                    dict["id"] = parseInt(roomsInfo[i].split(",")[0], 10);
+                    dict["status"] = roomsInfo[i].split(",")[1];
+                    console.log(dict);
+                    newRooms.push(dict);
+                }
+                $scope.rooms = newRooms;
+                $scope.$apply();
+                break;
             default:
                 if(e.data.includes("|")){
-                    $scope.fillOpponentBoard(e.data.split("|"));
+                    // $scope.enableOpponentBoard(e.data.split("|"));
                 } else {
                     console.log("Player ID:");
                     console.log(e.data);
@@ -65,28 +118,131 @@ angular.module('battleships', [])
     });
 
     $scope.sendBoard = function() {
-        var shipPlacementsInfo = ""
+        var shipPlacementsInfo = [[],[],[],[],[],[],[],[],[],[]];
         var shipPlacements = document.getElementById("w1").getElementsByTagName("div");
+
         for(let i=0; i<shipPlacements.length; i++){
-            if(shipPlacements[i].attributes.ship.nodeValue == "1"){
-                shipPlacementsInfo += shipPlacements[i].id+"|";
+            if(shipPlacements[i].attributes.ship.nodeValue == "1" && shipPlacements[i].hasChildNodes()){
+                var orientation = shipPlacements[i].firstChild.className.split("-")[3];
+                var xPos = parseInt(shipPlacements[i].id.split(",")[0], 10);
+                var yPos = parseInt(shipPlacements[i].id.split(",")[1], 10);
+                switch(shipPlacements[i].firstChild.id){
+                    case "ship1,1":
+                        shipPlacementsInfo[0].push(shipPlacements[i].id+"|");
+                        break;
+                    case "ship1,2":
+                        shipPlacementsInfo[1].push(shipPlacements[i].id+"|");
+                        break;
+                    case "ship1,3":
+                        shipPlacementsInfo[2].push(shipPlacements[i].id+"|");
+                        break;
+                    case "ship1,4":
+                        shipPlacementsInfo[3].push(shipPlacements[i].id+"|");
+                        break;
+                    case "ship2,1":
+                        if(orientation == "hor"){
+                            for(let i=0; i<2; i++){
+                                shipPlacementsInfo[4].push((xPos+i).toString()+","+yPos.toString()+"|");
+                            }
+                        } else {
+                            for(let i=0; i<2; i++){
+                                shipPlacementsInfo[4].push(xPos.toString()+","+(yPos-i).toString()+"|");
+                            }
+                        }
+                        break;
+                    case "ship2,2":
+                        if(orientation == "hor"){
+                            for(let i=0; i<2; i++){
+                                shipPlacementsInfo[5].push((xPos+i).toString()+","+yPos.toString()+"|");
+                            }
+                        } else {
+                            for(let i=0; i<2; i++){
+                                shipPlacementsInfo[5].push(xPos.toString()+","+(yPos-i).toString()+"|");
+                            }
+                        }
+                        break;
+                    case "ship2,3":
+                        if(orientation == "hor"){
+                            for(let i=0; i<2; i++){
+                                shipPlacementsInfo[6].push((xPos+i).toString()+","+yPos.toString()+"|");
+                            }
+                        } else {
+                            for(let i=0; i<2; i++){
+                                shipPlacementsInfo[6].push(xPos.toString()+","+(yPos-i).toString()+"|");
+                            }
+                        }
+                        break;
+                    case "ship3,1":
+                        if(orientation == "hor"){
+                            for(let i=0; i<3; i++){
+                                shipPlacementsInfo[7].push((xPos+i).toString()+","+yPos.toString()+"|");
+                            }
+                        } else {
+                            for(let i=0; i<3; i++){
+                                shipPlacementsInfo[7].push(xPos.toString()+","+(yPos-i).toString()+"|");
+                            }
+                        }
+                        break;
+                    case "ship3,2":
+                        if(orientation == "hor"){
+                            for(let i=0; i<3; i++){
+                                shipPlacementsInfo[8].push((xPos+i).toString()+","+yPos.toString()+"|");
+                            }
+                        } else {
+                            for(let i=0; i<3; i++){
+                                shipPlacementsInfo[8].push(xPos.toString()+","+(yPos-i).toString()+"|");
+                            }
+                        }
+                        break;
+                    case "ship4,1":
+                        if(orientation == "hor"){
+                            for(let i=0; i<4; i++){
+                                shipPlacementsInfo[9].push((xPos+i).toString()+","+yPos.toString()+"|");
+                            }
+                        } else {
+                            for(let i=0; i<4; i++){
+                                shipPlacementsInfo[9].push(xPos.toString()+","+(yPos-i).toString()+"|");
+                            }
+                        }
+                        break;
+                }
             }
         }
-        shipPlacementsInfo.slice(0, -1);
-        console.log(shipPlacementsInfo);
-        $scope.ws.send(shipPlacementsInfo);
+        var shipPlacementsString = "";
+        for(let i=0; i<shipPlacementsInfo.length; i++){
+            shipPlacementsString += shipPlacementsInfo[i].toString()+"-";
+        }
+        $scope.ws.send(shipPlacementsString);
+
+        // var shipPlacementsInfo = "";
+        // var shipPlacements = document.getElementById("w1").getElementsByTagName("div");
+        // for(let i=0; i<shipPlacements.length; i++){
+        //     if(shipPlacements[i].attributes.ship.nodeValue == "1"){
+        //         shipPlacements[i].id
+        //         shipPlacementsInfo += shipPlacements[i].id+"|";
+        //     }
+        // }
+        // shipPlacementsInfo.slice(0, -1);
+        // console.log(shipPlacementsInfo);
+        // $scope.ws.send(shipPlacementsInfo);
     }
 
-    $scope.fillOpponentBoard = function(positions){
-        var divs = document.getElementById("w2").getElementsByTagName("div");
-        console.log(document.getElementById("w2").getElementsByTagName("div"));
-        for(let i=0; i<divs.length; i++){
-            divs[i].outerHTML = divs[i].outerHTML.slice(0,-7)+" on-Click='strike()'></div>";
-            console.log(divs[i].outerHTML);
-            if(positions.includes(divs[i].id)){
-                divs[i].innerHTML = "<img class='ship-1-hor' src='gray.png'>";
-            }
-        }
+    // $scope.enableOpponentBoard = function(positions){
+    //     var divs = document.getElementById("w2").getElementsByTagName("div");
+    //     console.log(document.getElementById("w2").getElementsByTagName("div"));
+    //     for(let i=0; i<divs.length; i++){
+    //         divs[i].innerHTML = "";
+    //         divs[i].outerHTML = divs[i].outerHTML.slice(0,-7)+" on-Click='strike($event)'></div>";
+    //         console.log(divs[i].outerHTML);
+    //         // if(positions.includes(divs[i].id)){
+    //         //     divs[i].attributes.ship.nodeValue = "1";
+    //         // }
+    //     }
+    // }
+
+    $scope.strike = function($event){
+        console.log("hejka");
+        console.log($event.target);
     }
 })
 
@@ -415,4 +571,5 @@ function emptyPlace(shipClass, xPos, yPos){
         }
     }
 };
-
+    
+    
