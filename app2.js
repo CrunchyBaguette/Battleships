@@ -11,10 +11,13 @@ angular.module('battleships', [])
     $scope.battle = false;
     $scope.lobby = true;
 
+    $scope.gameMessage = "Loading...";
+    $scope.turn = false;
+
     $scope.createRoom = function() {
-        $scope.toggleBoard();
         $scope.battle = true;
         $scope.lobby = false;
+        $scope.toggleBoard();
         document.getElementById("left").id = "None";
         document.getElementById("right").id = "left";
         document.getElementById("enemy").id = "right";
@@ -23,13 +26,14 @@ angular.module('battleships', [])
     }
 
     $scope.leaveRoom = function() {
-        $scope.toggleBoard();
         $scope.battle = false;
         $scope.lobby = true;
+        $scope.toggleBoard();
         document.getElementById("right").id = "enemy";
         document.getElementById("left").id = "right";
         document.getElementById("None").id = "left";
 
+        $scope.turn = false;
         $scope.ws.send("leaveRoom");
     }
 
@@ -37,9 +41,9 @@ angular.module('battleships', [])
         var enemyID = $event.target.parentElement.parentElement.getElementsByTagName("td")[0].firstChild.data;
         var status = $event.target.parentElement.parentElement.getElementsByTagName("td")[1].firstChild.data;
         if(status != "Playing"){
-            $scope.toggleBoard();
             $scope.battle = true;
             $scope.lobby = false;
+            $scope.toggleBoard();
             document.getElementById("left").id = "None";
             document.getElementById("right").id = "left";
             document.getElementById("enemy").id = "right";
@@ -48,8 +52,26 @@ angular.module('battleships', [])
         }
     }
 
+    $scope.opponentLeft = function(){
+        var squares = document.getElementById("w1").getElementsByTagName("div");
+        var enemySquares = document.getElementById("w2").getElementsByTagName("div");
+
+        for(let i=0; i<squares.length; i++){
+            if(squares[i].attributes.ship.nodeValue == 1){
+                squares[i].className = "taken";
+            } else {
+                squares[i].className = "square";
+            }
+        }
+
+        for(let i=0; i<enemySquares.length; i++){
+            enemySquares[i].className = "square";
+        }
+    }
+
     $scope.toggleBoard = function(){
         var squares = document.getElementById("w1").getElementsByTagName("div");
+        var enemySquares = document.getElementById("w2").getElementsByTagName("div");
         for(let i=0; i<squares.length; i++){
             if(squares[i].hasChildNodes()){
                 if(squares[i].firstChild.attributes.draggable != null){
@@ -69,6 +91,18 @@ angular.module('battleships', [])
                     }
                 }
             }
+            if(squares[i].attributes.ship.nodeValue == 1){
+                if($scope.battle){
+                    squares[i].className = "taken";
+                } else {
+                    squares[i].className = "busy";
+                }
+            } else {
+                squares[i].className = "square";
+            }
+        }
+        for(let i=0; i<enemySquares.length; i++){
+            enemySquares[i].className = "square";
         }
     }
 
@@ -106,6 +140,102 @@ angular.module('battleships', [])
                 $scope.rooms = newRooms;
                 $scope.$apply();
                 break;
+            case "hit":
+                var strikePos = e.data.split("/")[1];
+                var positions = document.getElementById("w1").getElementsByTagName("div");
+                for(let i=0; i<positions.length; i++){
+                    if(positions[i].id == strikePos){
+                        positions[i].className = "hit";
+                    }
+                }
+                $scope.gameMessage = "Enemy hit your ship! They move again";
+                $scope.$apply();
+                break;
+            case "hitEnemy":
+                var strikePos = e.data.split("/")[1];
+                var positions = document.getElementById("w2").getElementsByTagName("div");
+                for(let i=0; i<positions.length; i++){
+                    if(positions[i].id == strikePos){
+                        positions[i].className = "hit";
+                    }
+                }
+                $scope.gameMessage = "You hit the enemy ship! Your turn again";
+                $scope.$apply();
+                break;
+            case "miss":
+                var strikePos = e.data.split("/")[1];
+                var positions = document.getElementById("w1").getElementsByTagName("div");
+                for(let i=0; i<positions.length; i++){
+                    if(positions[i].id == strikePos){
+                        positions[i].className = "miss";
+                    }
+                }
+                $scope.gameMessage = "Enemy missed! Your turn";
+                $scope.turn = true;
+                $scope.$apply();
+                break;
+            case "missEnemy":
+                var strikePos = e.data.split("/")[1];
+                var positions = document.getElementById("w2").getElementsByTagName("div");
+                for(let i=0; i<positions.length; i++){
+                    if(positions[i].id == strikePos){
+                        positions[i].className = "miss";
+                    }
+                }
+                $scope.gameMessage = "You missed! Enemy turn";
+                $scope.turn = false;
+                $scope.$apply();
+                break;
+            case "hitSink":
+                var sunkenPositions = e.data.split("/")[1].split("|");
+                console.log(sunkenPositions);
+                var positions = document.getElementById("w1").getElementsByTagName("div");
+                for(let i=0; i<positions.length; i++){
+                    if(sunkenPositions.includes(positions[i].id)){
+                        positions[i].className = "hitSink";
+                    }
+                }
+                $scope.gameMessage = "Enemy sunk your ship! Enemy turn again";
+                $scope.$apply();
+                break;
+            case "hitSinkEnemy":
+                var sunkenPositions = e.data.split("/")[1].split("|");
+                var positions = document.getElementById("w2").getElementsByTagName("div");
+                for(let i=0; i<positions.length; i++){
+                    if(sunkenPositions.includes(positions[i].id)){
+                        positions[i].className = "hitSink";
+                    }
+                }
+                $scope.gameMessage = "You sunk enemy ship! Your turn again";
+                $scope.$apply();
+                break;
+            case "win":
+                $scope.turn = false;
+                $scope.gameMessage = "You win!";
+                $scope.$apply();
+                break;
+            case "lost":
+                $scope.turn = false;
+                $scope.gameMessage = "You lost!";
+                $scope.$apply();
+                break;
+            case "opponentLeft":
+                console.log("wot?");
+                $scope.opponentLeft();
+                $scope.gameMessage = "Opponent left the game. Waiting for another player";
+                $scope.turn = false;
+                $scope.$apply();
+                break;
+            case "turn":
+                if(e.data.split("/")[1] == "true"){
+                    $scope.turn = true;
+                    $scope.gameMessage = "Your turn";
+                } else {
+                    $scope.turn = false;
+                    $scope.gameMessage = "Enemy turn";
+                }
+                $scope.$apply();
+                break;
             default:
                 if(e.data.includes("|")){
                     // $scope.enableOpponentBoard(e.data.split("|"));
@@ -123,7 +253,7 @@ angular.module('battleships', [])
 
         for(let i=0; i<shipPlacements.length; i++){
             if(shipPlacements[i].attributes.ship.nodeValue == "1" && shipPlacements[i].hasChildNodes()){
-                var orientation = shipPlacements[i].firstChild.className.split("-")[3];
+                var orientation = shipPlacements[i].firstChild.className.split(" ")[1].split("-")[2];
                 var xPos = parseInt(shipPlacements[i].id.split(",")[0], 10);
                 var yPos = parseInt(shipPlacements[i].id.split(",")[1], 10);
                 switch(shipPlacements[i].firstChild.id){
@@ -241,8 +371,10 @@ angular.module('battleships', [])
     // }
 
     $scope.strike = function($event){
-        console.log("hejka");
         console.log($event.target);
+        if($scope.turn && $event.target.className == "square"){
+            $scope.ws.send("strike/"+$event.target.id);
+        }
     }
 })
 

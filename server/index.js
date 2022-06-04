@@ -75,6 +75,116 @@ wss.on("connection", ws => {
                             rooms[i].player2 = ws;
                             rooms[i].player1.send("sendBoard");
                             rooms[i].player2.send("sendBoard");
+
+                            var startingPlayer = Math.floor(Math.random() * (Math.floor(2) - Math.ceil(1) + 1)) + Math.ceil(1);
+
+                            if(startingPlayer == 1){
+                                rooms[i].player1.send("turn/true");
+                                rooms[i].player2.send("turn/false");
+                            } else {
+                                rooms[i].player2.send("turn/true");
+                                rooms[i].player1.send("turn/false");
+                            }
+
+                        }
+                    }
+                    break;
+                case "strike":
+                    var strikePos = e.data.split("/")[1];
+                    for(let i=0; i<rooms.length; i++){
+                        if(rooms[i].player1 == ws){
+                            if(rooms[i].player2 != null){
+                                var didHit = false;
+                                var didSink = false;
+                                var won = false;
+                                var sunkPositions = [];
+                                for(let j=0; j<rooms[i].player2.shipPositions.length; j++){
+                                    var shipPos = rooms[i].player2.shipPositions[j];
+                                    if(rooms[i].player2.shipPositions[j].includes(strikePos)){
+                                        didHit = true;
+                                        rooms[i].player2.shipPositions[j][shipPos.length-1] -= 1;
+                                        if(rooms[i].player2.shipPositions[j][shipPos.length-1] == 0){
+                                            for(let k=0; k<rooms[i].player2.shipPositions.length; k++){
+                                                won = true;
+                                                if(rooms[i].player2.shipPositions[k][rooms[i].player2.shipPositions[k].length-1] != 0){
+                                                    won = false;
+                                                    break;
+                                                }
+                                            }
+                                            didSink = true;
+                                            sunkPositions = rooms[i].player2.shipPositions[j].slice(0,-1);
+                                        }
+                                        break;
+                                    }
+                                }
+
+                                if(didHit){
+                                    if(didSink){
+                                        var coordinates = "";
+                                        for(let i=0; i<sunkPositions.length; i++){
+                                            coordinates += sunkPositions[i] + "|";
+                                        }
+                                        rooms[i].player2.send("hitSink/"+coordinates);
+                                        rooms[i].player1.send("hitSinkEnemy/"+coordinates);
+                                        if(won){
+                                            rooms[i].player2.send("lost/");
+                                            rooms[i].player1.send("win/");
+                                        }
+                                    } else {
+                                        rooms[i].player2.send("hit/"+strikePos);
+                                        rooms[i].player1.send("hitEnemy/"+strikePos);
+                                    }
+                                } else{
+                                    rooms[i].player2.send("miss/"+strikePos);
+                                    rooms[i].player1.send("missEnemy/"+strikePos);
+                                }
+                            }
+                            break;
+                        } else if(rooms[i].player2 == ws){
+                            var didHit = false;
+                            var didSink = false;
+                            var won = true;
+                            var sunkPositions = [];
+                            for(let j=0; j<rooms[i].player1.shipPositions.length; j++){
+                                var shipPos = rooms[i].player1.shipPositions[j];
+                                if(rooms[i].player1.shipPositions[j].includes(strikePos)){
+                                    didHit = true;
+                                    rooms[i].player1.shipPositions[j][shipPos.length-1] -= 1;
+                                    if(rooms[i].player1.shipPositions[j][shipPos.length-1] == 0){
+                                        for(let k=0; k<rooms[i].player1.shipPositions.length; k++){
+                                            won = true;
+                                            if(rooms[i].player1.shipPositions[k][rooms[i].player1.shipPositions[k].length-1] != 0){
+                                                won = false;
+                                                break;
+                                            }
+                                        }
+                                        didSink = true;
+                                        sunkPositions = rooms[i].player1.shipPositions[j].slice(0,-1);
+                                    }
+                                    break;
+                                }
+                            }
+                            if(didHit){
+                                if(didSink){
+                                    var coordinates = "";
+                                    for(let i=0; i<sunkPositions.length; i++){
+                                        coordinates += sunkPositions[i] + "|";
+                                    }
+                                    rooms[i].player1.send("hitSink/"+coordinates);
+                                    rooms[i].player2.send("hitSinkEnemy/"+coordinates);
+                                    if(won){
+                                        rooms[i].player1.send("lost/");
+                                        rooms[i].player2.send("win/");
+                                    }
+                                } else {
+                                    rooms[i].player1.send("hit/"+strikePos);
+                                    rooms[i].player2.send("hitEnemy/"+strikePos);
+                                }
+                            } else {
+                                rooms[i].player1.send("miss/"+strikePos);
+                                rooms[i].player2.send("missEnemy/"+strikePos);
+                            }
+                            break;
                         }
                     }
                     break;
@@ -94,6 +204,7 @@ wss.on("connection", ws => {
                         }
                         shipsPositions.push(arr);
                         shipsPositions[i].pop();
+                        shipsPositions[i].push(shipsPositions[i].length);
                     }
 
                     ws.shipPositions = shipsPositions;
@@ -118,8 +229,10 @@ wss.on("connection", ws => {
                 if(rooms[i].player1 == ws){
                     rooms[i].player1 = null;
                     if(rooms[i].player2 != null){
+                        rooms[i].player2.send("opponentLeft");
                         rooms[i].player1 = rooms[i].player2;
                         rooms[i].player2 = null;
+                        rooms[i].id = rooms[i].player1.id;
                         rooms[i].status = "Waiting";
                     }
                     else {
@@ -127,6 +240,7 @@ wss.on("connection", ws => {
                     }
                     break;
                 } else if(rooms[i].player2 == ws) {
+                    rooms[i].player1.send("opponentLeft");
                     rooms[i].player2 = null;
                     rooms[i].status = "Waiting";
                     break;

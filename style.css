@@ -8,6 +8,38 @@
     border: 1px solid black;
     float: left;
 }
+
+.taken {
+    width: 50px;    
+    height: 50px;
+    border: 1px solid black;
+    background-color: grey;
+    float: left;
+}
+
+.hit {
+    width: 50px;    
+    height: 50px;
+    border: 1px solid black;
+    background-color: red;
+    float: left;
+}
+
+.miss {
+    width: 50px;    
+    height: 50px;
+    border: 1px solid black;
+    background-color: cyan;
+    float: left;
+}
+
+.hitSink {
+    width: 50px;    
+    height: 50px;
+    border: 1px solid black;
+    background-color: black;
+    float: left;
+}
   
 .clearfix {
     clear:both;
