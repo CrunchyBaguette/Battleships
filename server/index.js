@@ -62,7 +62,9 @@ wss.on("connection", ws => {
                     break;
                 case "leaveRoom":
                     leaveRoom(ws);
-                    sendRoomsUpdate(ws);
+                    for(let i=0; i<[...wss.clients].length; i++){
+                        sendRoomsUpdate([...wss.clients][i]);
+                    }
                     break;
                 case "getRooms":
                     sendRoomsUpdate(ws);
@@ -85,6 +87,12 @@ wss.on("connection", ws => {
                                 rooms[i].player2.send("turn/true");
                                 rooms[i].player1.send("turn/false");
                             }
+
+                            for(let j=0; j<[...wss.clients].length; j++){
+                                sendRoomsUpdate([...wss.clients][j]);
+                            }
+
+                            break;
 
                         }
                     }
