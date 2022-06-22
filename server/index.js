@@ -27,7 +27,6 @@ wss.on("connection", ws => {
         });
 
         ws.addEventListener("message", e => {
-            // console.log([...wss.clients].indexOf(ws));
             var code = e.data.split("/")[0];
             switch(code){
                 case "connect":
@@ -44,7 +43,6 @@ wss.on("connection", ws => {
                     }
         
                     if(count == 2){
-                        console.log("Let's start!");
                         [...wss.clients][0].opponent = [...wss.clients][1];
                         [...wss.clients][1].opponent = [...wss.clients][0];
                         [...wss.clients][0].send("sendBoard");
@@ -197,9 +195,6 @@ wss.on("connection", ws => {
                     }
                     break;
                 default:
-                    console.log("ship info of player "+ws.id.toString());
-                    console.log(e.data);
-
                     var shipsPositionsStrings = e.data.split("-");
                     var shipsPositions = [];
 
@@ -254,7 +249,6 @@ wss.on("connection", ws => {
                     break;
                 }
             }
-            console.log(rooms);
         }
     }
 });
